@@ -8,12 +8,15 @@ var pagination = function(opts) {
     var perPage = opts.perPage || 10;
 
     var paginate = function(filePath, collection, fileName, files) {
+
         var numPages = Math.ceil(collection.length/perPage),
             file     = files[fileName],
             ext      = path.extname(fileName),
             baseName = filePath || fileName.substr(0, fileName.lastIndexOf(ext)),
             last     = file,
             clone;
+
+		var pathNow = 'index.html';
 
         file.pagination = {
             prev: clone,
@@ -23,24 +26,32 @@ var pagination = function(opts) {
             end: perPage - 1
         };
 
-        for (var i = 1; i < numPages; i++) {
-            var cloneName = baseName + '-' + (i+1) + ext;
-            clone = cloneObj(file, true, function (value) {
-                if ( Buffer.isBuffer(value) ) {
-                    return value.slice();
-                }
-            });
+		file.pathNow = pathNow;
 
-            last.pagination.next = clone;
-            clone.pagination.prev = last;
-            clone.pagination.start = i * perPage;
-            clone.pagination.end = i * perPage + perPage - 1;
-            clone.num = i+1;
 
-            files[cloneName] = clone;
+		for (var i = 1; i < numPages ; i++) {
+			var cloneName = baseName + '-' + (i+1) + ext;
+			clone = cloneObj(file, true, function (value) {
+				if ( Buffer.isBuffer(value) ) {
+					return value.slice();
+				}
+			});
 
-            last = clone;
-        }
+			if(i+1 === 4) {
+				clone.pagination.next = 0;
+			}
+			last.pagination.next = clone;
+			clone.pagination.prev = last;
+			clone.pagination.start = i * perPage;
+			clone.pagination.end = i * perPage + perPage - 1;
+			clone.num = i+1;
+			clone.pathNow = 'index-'+(i+1) + '.html';
+
+			files[cloneName] = clone;
+
+			last = clone;
+		}
+
     }
 
 
